@@ -52,5 +52,6 @@ If you use this code for your research, please cite our paper.
 ```
 
 ## Reference
-Our code is based on [DN4](https://github.com/WenbinLee/DN4).
+
+Our code is based on [ATL-Net](https://github.com/WenbinLee/DN4).
 

@@ -37,10 +37,10 @@ class AEAModule(nn.Module):
         return attention_mask
 
 
-class ATLModule(nn.Module):
+class CrossRelationModule(nn.Module):
     def __init__(self, inplanes, transfer_name='W', scale_value=30, atten_scale_value=50, from_value=0.5,
                  value_interval=0.3):
-        super(ATLModule, self).__init__()
+        super(CrossRelationModule, self).__init__()
 
         self.inplanes = inplanes
         self.scale_value = scale_value
@@ -59,8 +59,11 @@ class ATLModule(nn.Module):
     def forward(self, query_data, support_data):
         b, c, h, w = query_data.size()
         s, _, _, _ = support_data.size()
+        # aa=support_data.unsqueeze(0)
+        # bb=support_data.unsqueeze(0).expand(b, -1, -1, -1, -1)
+        # cc=support_data.unsqueeze(0).expand(b, -1, -1, -1, -1).contiguous()
         support_data = support_data.unsqueeze(0).expand(b, -1, -1, -1, -1).contiguous().view(b * s, c, h, w)
-
+        # dd = self.W(query_data)
         w_query = self.W(query_data).view(b, c, h * w)
         w_query = w_query.permute(0, 2, 1).contiguous()
         w_support = self.W(support_data).view(b, s, c, h * w).permute(0, 2, 1, 3).contiguous().view(b, c, s * h * w)
@@ -75,7 +78,7 @@ class ATLModule(nn.Module):
         query_data = F.normalize(query_data, dim=2)
         support_data = F.normalize(support_data, dim=1)
 
-        match_score = torch.matmul(query_data, support_data)
+        match_score = torch.matmul(query_data, support_data)  # relation map
         attention_match_score = torch.mul(attention_score, match_score).view(b, h * w, s, h * w).permute(0, 2, 1, 3)
 
         final_local_score = torch.sum(attention_match_score.contiguous().view(b, s, h * w, h * w), dim=-1)
@@ -84,9 +87,9 @@ class ATLModule(nn.Module):
         return final_score, final_local_score
 
 
-class ALTNet(nn.Module):
+class CrossRelationNet(nn.Module):
     def __init__(self, base_model='Conv64F', base_model_info=None, **kwargs):
-        super(ALTNet, self).__init__()
+        super(CrossRelationNet, self).__init__()
 
         if base_model_info is None:
             base_model_info = {}
@@ -101,7 +104,7 @@ class ALTNet(nn.Module):
         else:
             raise RuntimeError
 
-        self.metric_layer = ATLModule(**self.kwargs)
+        self.metric_layer = CrossRelationModule(**self.kwargs)
 
         init_weights(self, init_type='normal')
 

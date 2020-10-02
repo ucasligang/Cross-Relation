@@ -16,7 +16,7 @@ from torch import optim
 import torch.backends.cudnn
 
 from datasets import ImageFolder
-from models import ALTNet
+from models import CrossRelationNet
 from utils import AverageMeter, print_func, save_model
 from utils import accuracy
 from utils import prepare_device
@@ -38,7 +38,6 @@ def train(train_loader, model, criterion, optimizer, epoch_index, device, fout_f
     end = time.time()
     for episode_index, (query_images, query_targets, support_images, support_targets) in enumerate(train_loader):
         data_time.update(time.time() - end)
-
         way_num = len(support_images)
         shot_num = len(support_images[0])
         query_input = torch.cat(query_images, 0)
@@ -171,7 +170,7 @@ def main(config):
         transforms.Normalize(mean=mean, std=std),
     ])
 
-    model = ALTNet(**config['arch'])
+    model = CrossRelationNet(**config['arch'])
     print_func(model, fout_file)
 
     optimizer = optim.Adam(model.parameters(), lr=config['train']['optim_lr'])

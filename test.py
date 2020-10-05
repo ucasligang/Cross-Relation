@@ -14,7 +14,7 @@ import torchvision.transforms as transforms
 from PIL import ImageFile
 
 from datasets import ImageFolder
-from models import ALTNet
+from models import CrossRelationNet
 from utils import AverageMeter, print_func, mean_confidence_interval
 from utils import accuracy
 from utils import prepare_device
@@ -94,7 +94,7 @@ def main(result_path, epoch_num):
         transforms.Normalize(mean=mean, std=std),
     ])
 
-    model = ALTNet(**config['arch'])
+    model = CrossRelationNet(**config['arch'])
     print_func(model, fout_file)
 
     state_dict = torch.load(os.path.join(result_path, '{}_best_model.pth'.format(config['data_name'])))
